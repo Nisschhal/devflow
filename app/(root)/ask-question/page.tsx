@@ -1,7 +1,15 @@
-import React from "react"
+import QuestionForm from "@/components/cards/QuestionForm"
 
-const AskQuestion = () => {
-  return <div>AskQuestion</div>
+const AskAQuestion = () => {
+  return (
+    <>
+      <h1 className="h1-bold text-dark100_light900">Ask a question</h1>
+
+      <div className="mt-9">
+        <QuestionForm />
+      </div>
+    </>
+  )
 }
 
-export default AskQuestion
+export default AskAQuestion
