@@ -2,7 +2,9 @@ import type { Metadata } from "next"
 import { Inter, Space_Grotesk } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import NavBar from "@/components/navigation/navbar"
+import { Toaster } from "@/components/ui/sonner"
+import { SessionProvider } from "next-auth/react"
+import { auth } from "@/auth"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,28 +28,38 @@ export const metadata: Metadata = {
     icon: "/images/site-logo.svg",
   },
 }
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await auth()
   return (
     <html
       lang="en"
       className={`${inter.className} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <NavBar />
-          {children}
-        </ThemeProvider>
-      </body>
+      <head>
+        <link
+          rel="stylesheet"
+          type="text/css"
+          href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+        />
+      </head>
+      <SessionProvider session={session}>
+        <body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster richColors position="top-center" />
+          </ThemeProvider>
+        </body>
+      </SessionProvider>
     </html>
   )
 }

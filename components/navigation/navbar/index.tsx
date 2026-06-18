@@ -1,10 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Theme } from "./theme"
+import { MobileNavigation } from "./MobileNavigation"
 
 const NavBar = () => {
   return (
-    <div className="flex-between background-light900_dark200 fixed z-50 w-full  p-6 shadow-light-300 dark:shadow-none sm:px-12">
+    <div className="flex-between background-light900_dark200 sticky top-0 z-50 w-full  p-6 shadow-light-300 dark:shadow-none sm:px-12">
       <Link href="/" className="flex-center gap-1 ">
         <Image
           src="/images/site-logo.svg"
@@ -21,6 +22,7 @@ const NavBar = () => {
 
       <div className="flex-between gap-5">
         <Theme />
+        <MobileNavigation />
       </div>
     </div>
   )
