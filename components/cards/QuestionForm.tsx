@@ -14,22 +14,24 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
 
-const askQuestionSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters."),
-  content: z.string(),
-  tags: z.array(z.string()),
+import dynamic from "next/dynamic"
+import { AskQuestionSchema } from "@/lib/validation"
+import { forwardRef, useRef } from "react"
+import { MDXEditorMethods } from "@mdxeditor/editor"
+
+// This is the only place InitializedMDXEditor is imported directly.
+const Editor = dynamic(() => import("../editor"), {
+  // Make sure we turn SSR off because MDX editor is client side so keep this as placeholder by turning ssr off
+  ssr: false,
 })
 
 const QuestionForm = () => {
-  const form = useForm<z.infer<typeof askQuestionSchema>>({
-    resolver: standardSchemaResolver(askQuestionSchema),
+  // To pass to editor so it can be controlled via ref
+  const editorRef = useRef<MDXEditorMethods>(null)
+
+  const form = useForm<z.infer<typeof AskQuestionSchema>>({
+    resolver: standardSchemaResolver(AskQuestionSchema),
     defaultValues: {
       title: "",
       content: "",
@@ -37,7 +39,7 @@ const QuestionForm = () => {
     },
   })
 
-  const handleSubmit = (data: z.infer<typeof askQuestionSchema>) => {}
+  const handleSubmit = (data: z.infer<typeof AskQuestionSchema>) => {}
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <FieldGroup>
@@ -86,13 +88,18 @@ const QuestionForm = () => {
                 Detailed explanation of your problem{" "}
                 <span className="text-primary-500">*</span>
               </FieldLabel>
-              <Input
+              {/* <Input
                 {...field}
                 id="form-rhf-demo-title"
                 aria-invalid={fieldState.invalid}
                 // placeholder="What is React?"
                 autoComplete="off"
                 className="paragraph-regular background-light700_dark300 light-border-2 text-dark300_light700 no-focus min-h-[56px] border"
+              /> */}
+              <Editor
+                value={field.value}
+                fieldChange={field.onChange}
+                editorRef={editorRef}
               />
               <FieldDescription className="body-regular mt-2.5 text-light-500">
                 Introduce the problem and expand on what you&apos;ve put in the
