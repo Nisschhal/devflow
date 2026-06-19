@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from "mongoose"
+import logger from "./logger"
 
 // grab the mongodb url from .env file
 const MONGODB_URI = process.env.MONGODB_URI as string
@@ -28,7 +29,10 @@ if (!cached) {
 
 const dbConnect = async (): Promise<Mongoose> => {
   // already connected before? just reuse it, no waiting needed
-  if (cached.conn) return cached.conn
+  if (cached.conn) {
+    logger.info("Using existing mongoose connection")
+    return cached.conn
+  }
 
   // no one started connecting yet? start now and save the promise
   // if someone else already started, we skip this and just wait on their promise
@@ -38,11 +42,11 @@ const dbConnect = async (): Promise<Mongoose> => {
         dbName: "devflow",
       })
       .then((result) => {
-        console.log("MongoDB connected successfully!")
+        logger.info("Connected to MongoDB")
         return result
       })
       .catch((error) => {
-        console.error("Error connecting MongoDB!")
+        logger.error("Error connecting to MongoDB!", error)
         throw error
       })
   }
@@ -53,3 +57,5 @@ const dbConnect = async (): Promise<Mongoose> => {
 
   return cached.conn
 }
+
+export default dbConnect
