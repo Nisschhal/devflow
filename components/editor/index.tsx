@@ -56,6 +56,7 @@ export default function Editor({
     <MDXEditor
       className="background-light800_dark200 light-border-2 markdown-editor dark-editor w-full border rounded-2"
       markdown={value}
+      onChange={fieldChange}
       plugins={[
         headingsPlugin(),
         listsPlugin(),

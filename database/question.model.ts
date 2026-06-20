@@ -1,4 +1,4 @@
-import { Schema, models, model, Types, Document } from "mongoose"
+import mongoose, { Schema, models, model, Types, Document } from "mongoose"
 
 export interface IQuestion {
   title: string
@@ -26,7 +26,7 @@ const QuestionSchema = new Schema<IQuestion>(
   { timestamps: true },
 )
 
-const Question =
-  models?.Question || model<IQuestion>("Question", QuestionSchema)
+const Question = (models?.Question ||
+  model<IQuestion>("Question", QuestionSchema)) as mongoose.Model<IQuestion>
 
 export default Question

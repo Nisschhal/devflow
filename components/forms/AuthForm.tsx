@@ -23,7 +23,6 @@ import { AUTH_LABELS, FIELD_VALUES, type FormType } from "@/constants/form"
 import { Button } from "../ui/button"
 import ROUTES from "@/constants/route"
 import Link from "next/link"
-import { ActionResponse } from "@/types/global"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 

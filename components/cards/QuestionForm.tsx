@@ -17,9 +17,14 @@ import { Input } from "@/components/ui/input"
 
 import dynamic from "next/dynamic"
 import { AskQuestionSchema } from "@/lib/validation"
-import { forwardRef, useRef } from "react"
+import { forwardRef, useRef, useTransition } from "react"
 import { MDXEditorMethods } from "@mdxeditor/editor"
 import TagCard from "./TagCard"
+import { createQuestion, updateQuestion } from "@/lib/actions/question.action"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import ROUTES from "@/constants/route"
+import { Circle, Loader } from "lucide-react"
 
 // This is the only place InitializedMDXEditor is imported directly.
 const Editor = dynamic(() => import("../editor"), {
@@ -27,19 +32,25 @@ const Editor = dynamic(() => import("../editor"), {
   ssr: false,
 })
 
-const QuestionForm = () => {
+interface Params {
+  question?: Question
+  isEdit?: boolean
+}
+
+const QuestionForm = ({ question, isEdit = false }: Params) => {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   // To pass to editor so it can be controlled via ref
   const editorRef = useRef<MDXEditorMethods>(null)
 
   const form = useForm<z.infer<typeof AskQuestionSchema>>({
     resolver: standardSchemaResolver(AskQuestionSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      tags: [],
+      title: question?.title || "",
+      content: question?.content || "",
+      tags: question?.tags.map((tag) => tag.name) || [],
     },
   })
-
   const handleInputkeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     field: { value: string[] },
@@ -81,7 +92,34 @@ const QuestionForm = () => {
     }
   }
 
-  const handleSubmit = (data: z.infer<typeof AskQuestionSchema>) => {}
+  const handleSubmit = async (data: z.infer<typeof AskQuestionSchema>) => {
+    startTransition(async () => {
+      if (isEdit && question) {
+        const result = await updateQuestion({
+          questionId: question?._id,
+          ...data,
+        })
+
+        if (result.success) {
+          toast.success("Question updated successfully")
+
+          if (result.data) router.push(ROUTES.QUESTION(result.data._id))
+        } else {
+          toast.error(result.error?.message || "Something went wrong")
+        }
+
+        return
+      }
+
+      const result = await createQuestion(data)
+      if (result.success) {
+        toast.success("Question created successfully!")
+        result.data && router.push(ROUTES.QUESTION(result.data?._id))
+      } else {
+        toast.success("Question creation failed!")
+      }
+    })
+  }
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -202,7 +240,14 @@ const QuestionForm = () => {
 
       <div className="mt-16 flex justify-end">
         <Button type="submit" className="primary-gradient w-fit text-light-900">
-          Ask A Question
+          {isPending ? (
+            <>
+              <Loader className="mr-2 size-4 animate-spin" />
+              <span>{isEdit ? "Updating..." : "Submitting.."}</span>
+            </>
+          ) : (
+            <>{isEdit ? "Edit" : "Ask a Question"}</>
+          )}
         </Button>
       </div>
     </form>

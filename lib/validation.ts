@@ -114,13 +114,13 @@ export const SignInWithOAuthSchema = z.object({
   }),
 })
 
-// export const EditQuestionSchema = AskQuestionSchema.extend({
-//   questionId: z.string().min(1, "Question ID is required"),
-// })
+export const EditQuestionSchema = AskQuestionSchema.extend({
+  questionId: z.string().min(1, "Question ID is required"),
+})
 
-// export const GetQuestionSchema = z.object({
-//   questionId: z.string().min(1, "Question ID is required"),
-// })
+export const GetQuestionSchema = z.object({
+  questionId: z.string().min(1, "Question ID is required"),
+})
 
 // export const PaginatedSearchParamsSchema = z.object({
 //   page: z.number().min(1, "Page must be at least 1").default(1),
