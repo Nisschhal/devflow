@@ -7,6 +7,7 @@ import HomeFilter from "@/components/filter/HomeFilter"
 import QuestionCard from "@/components/cards/QuestionCard"
 import dbConnect from "@/lib/mongoose"
 import handleError from "@/lib/handlers/error"
+import { signOut } from "@/auth"
 
 const questions = [
   {
@@ -78,6 +79,14 @@ const Home = async ({ searchParams }: HomeProps) => {
 
   return (
     <>
+      <form
+        action={async () => {
+          "use server"
+          await signOut()
+        }}
+      >
+        <Button type="submit">Logout</Button>
+      </form>
       <section className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="h1-bold text-dark100_light900">All Questions</h1>
 

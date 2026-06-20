@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server"
+
 interface Tag {
   _id: string
   name: string
@@ -19,3 +21,20 @@ interface Question {
   views: number
   createdAt: Date
 }
+
+type ActionResponse<T = null> = {
+  success: boolean
+  data?: T // if success true, T = whatever coming in from db
+  error?: {
+    // if no data or sucess is false then its error
+    message: string
+    details?: Record<string, string[]>
+  }
+  status?: number
+}
+
+type SuccessResponse<T = null> = ActionResponse<T> & { success: true }
+type ErrorResponse = ActionResponse<undefined> & { success: false }
+
+type APIErrorResponse = NextResponse<ErrorResponse>
+type APIResponse<T = null> = NextResponse<SuccessResponse<T> | ErrorResponse>
