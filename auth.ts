@@ -1,10 +1,14 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
 
 import { IAccountDoc } from "./database/account.model"
 import { api } from "./lib/api"
 import { ActionResponse } from "./types/global"
+import { SignInSchema } from "./lib/validation"
+import { IUserDoc } from "./database/user.model"
+import bcrypt from "bcryptjs"
 
 // NextAuth gives us 4 things:
 // - handlers: GET & POST route handlers for /api/auth/* (sign-in pages, callbacks, etc.)
@@ -14,7 +18,81 @@ import { ActionResponse } from "./types/global"
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // The OAuth providers we support — GitHub and Google
   // Users click "Sign in with GitHub/Google" → redirected to provider → provider sends user data back
-  providers: [GitHub, Google],
+  providers: [
+    GitHub,
+    Google,
+
+    // ============================
+    // CREDENTIALS PROVIDER — Email/Password Login
+    // ============================
+    // Unlike GitHub/Google which handle auth externally, Credentials lets users
+    // sign in with email + password that WE store in our own database.
+    // NextAuth calls authorize() when a user submits the sign-in form.
+    // It must return a User object if valid, or null to deny sign-in.
+    Credentials({
+      async authorize(credentials) {
+        // Step 1: Validate the incoming credentials (email & password) with Zod
+        // credentials = whatever the user typed in the sign-in form
+        // safeParse doesn't throw — it returns { success, data, error }
+        const validatedFields = SignInSchema.safeParse(credentials)
+
+        if (validatedFields.success) {
+          const { email, password } = validatedFields.data
+
+          // Step 2: Look up the Account by email
+          // For credentials auth, the "providerAccountId" is the user's email
+          // (unlike OAuth where it's a provider-specific ID like "12345678")
+          // This finds the Account document that stores the hashed password
+          const { data: existingAccount } = (await api.accounts.getByProvider(
+            email,
+          )) as ActionResponse<IAccountDoc>
+
+          // No account found with this email — deny sign-in
+          // This means the user hasn't registered yet
+          if (!existingAccount) return null
+
+          // Step 3: Look up the actual User document using the userId from the Account
+          // Account stores: { userId, provider, password, ... }
+          // User stores: { name, email, image, ... }
+          // They're separate because one User can have multiple Accounts
+          // (e.g., same user signed up with email AND linked GitHub)
+          const { data: existingUser } = (await api.users.getById(
+            existingAccount.userId.toString(),
+          )) as ActionResponse<IUserDoc>
+
+          // User document doesn't exist (shouldn't happen, but safety check)
+          if (!existingUser) return null
+
+          // Step 4: Compare the password the user typed with the hashed password in DB
+          // bcrypt.compare("mypassword", "$2a$10$hashedversion...")
+          // It hashes the input and checks if it matches — never stores plain text
+          // The "!" on password means we trust it exists (credentials accounts must have one)
+          const isValidPassword = await bcrypt.compare(
+            password,
+            existingAccount.password!,
+          )
+
+          // Step 5: If password matches, return the user object
+          // NextAuth uses this returned object to create the JWT token
+          // id MUST be a string (not MongoDB ObjectId), so we call .toString()
+          // This object becomes the "user" in the signIn callback and populates the JWT
+          if (isValidPassword) {
+            return {
+              id: existingUser._id.toString(),
+              name: existingUser.name,
+              email: existingUser.email,
+              image: existingUser.image,
+            }
+          }
+        }
+
+        // If we reach here, either:
+        // - Validation failed (bad email/password format)
+        // - Password didn't match
+        return null
+      },
+    }),
+  ],
 
   // Callbacks are functions that run at specific points during the auth flow
   // They run in this order on first sign-in: signIn → jwt → session
@@ -26,7 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // PURPOSE: Decide whether to ALLOW or DENY the sign-in, and save user to our database
     // RETURNS: true = allow sign-in, false = deny sign-in
     async signIn({ user, profile, account }) {
-      console.log("user, profile, account from signIn", {
+      console.log("user, profile, account from signIn--------------------", {
         user,
         profile,
         account,

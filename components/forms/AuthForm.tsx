@@ -23,6 +23,9 @@ import { AUTH_LABELS, FIELD_VALUES, type FormType } from "@/constants/form"
 import { Button } from "../ui/button"
 import ROUTES from "@/constants/route"
 import Link from "next/link"
+import { ActionResponse } from "@/types/global"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 /**
  * 1. THE GENERIC INTERFACE (The Job Description)
@@ -40,7 +43,7 @@ interface AuthFormProps<T extends FieldValues> {
   defaultValues: T
 
   // THE RESULT: A function that takes the finished data (T) and sends it to the server.
-  onSubmit: (data: T) => Promise<{ success: boolean }>
+  onSubmit: (data: T) => Promise<ActionResponse>
 
   // THE SETTINGS: Tells the form if we are in "SIGN_IN" or "SIGN_UP" mode.
   formType: FormType
@@ -62,6 +65,7 @@ const AuthForm = <T extends FieldValues>({
   onSubmit,
   formType,
 }: AuthFormProps<T>) => {
+  const router = useRouter()
   /**
    * 3. INITIALIZING THE ENGINE (useForm)
    *
@@ -83,7 +87,29 @@ const AuthForm = <T extends FieldValues>({
    * SubmitHandler<T> ensures the 'data' we get at the end is the exact shape T.
    */
   const handleSubmit: SubmitHandler<T> = async (data) => {
-    await onSubmit(data)
+    try {
+      const result = (await onSubmit(data)) as ActionResponse
+      console.log("AuthForm handleSubmit result:", JSON.stringify(result))
+      if (result?.success) {
+        toast.success(
+          formType === "SIGN_IN"
+            ? "Sign in Successful!"
+            : "Sign up Successful!",
+        )
+
+        router.push(ROUTES.HOME)
+      } else {
+        toast.error(
+          formType === "SIGN_IN" ? "Sign in Failed!" : "Sign up Failed!",
+          { description: result?.error?.message },
+        )
+      }
+    } catch (error) {
+      console.log("AuthForm handleSubmit ERROR:", error)
+      toast.error("Something went wrong", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      })
+    }
   }
 
   // Lookup the correct button text based on 'formType' and 'isSubmitting' state.

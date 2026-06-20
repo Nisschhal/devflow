@@ -15,8 +15,10 @@ import ROUTES from "@/constants/route"
 import Image from "next/image"
 import Link from "next/link"
 import NavLinks from "./NavLinks"
+import { signOut } from "@/auth"
+import { LogOut } from "lucide-react"
 
-export function MobileNavigation() {
+export function MobileNavigation({ userId }: { userId?: string }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -30,7 +32,7 @@ export function MobileNavigation() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="background-light900_dark200 border-none p-4"
+        className="background-light900_dark200 border-none p-4 "
       >
         <SheetTitle className="hidden">Navigation</SheetTitle>
         <Link href="/" className="flex items-center gap-1">
@@ -52,22 +54,41 @@ export function MobileNavigation() {
               <NavLinks isMobileNav />
             </section>
           </SheetClose>
-          <div className="flex flex-col gap-3">
-            <SheetClose asChild>
-              <Link href={ROUTES.SIGN_IN}>
-                <Button className="small-medium btn-secondary min-h-[41px] w-full rounded-lg px-4 py-3">
-                  <span className="primary-text-gradient">Log In</span>
-                </Button>
-              </Link>
-            </SheetClose>
-            <SheetClose asChild>
-              <Link href={ROUTES.SIGN_UP}>
-                <Button className="small-medium light-border-2 btn-tertiary min-h-[41px] text-dark400_light900 w-full rounded-lg px-4 py-3 shadow-none">
-                  <span className="primary-text-gradient">Sign Up</span>
-                </Button>
-              </Link>
-            </SheetClose>
-          </div>
+
+          {userId ? (
+            <form
+              action={async () => {
+                "use server"
+
+                await signOut()
+              }}
+            >
+              <Button
+                type="submit"
+                className="base-medium w-full justify-start bg-transparent! cursor-pointer px-4 py-3"
+              >
+                <LogOut className="size-5 text-black dark:text-white" />
+                <span className="text-dark300_light900">Logout</span>
+              </Button>
+            </form>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <SheetClose asChild>
+                <Link href={ROUTES.SIGN_IN}>
+                  <Button className="small-medium btn-secondary min-h-[41px] w-full rounded-lg px-4 py-3">
+                    <span className="primary-text-gradient">Log In</span>
+                  </Button>
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link href={ROUTES.SIGN_UP}>
+                  <Button className="small-medium light-border-2 btn-tertiary min-h-[41px] text-dark400_light900 w-full rounded-lg px-4 py-3 shadow-none">
+                    <span className="primary-text-gradient">Sign Up</span>
+                  </Button>
+                </Link>
+              </SheetClose>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>
