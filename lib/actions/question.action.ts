@@ -1,8 +1,7 @@
 "use server"
 
-import mongoose from "mongoose"
+import mongoose, { type QueryFilter } from "mongoose"
 
-import Question from "@/database/question.model"
 import TagQuestion from "@/database/tag-question.model"
 import Tag, { ITagDoc } from "@/database/tag.model"
 
@@ -12,7 +11,9 @@ import {
   AskQuestionSchema,
   EditQuestionSchema,
   GetQuestionSchema,
+  PaginatedSearchParamsSchema,
 } from "../validation"
+import Question, { IQuestionDoc } from "@/database/question.model"
 
 export async function createQuestion(
   params: CreateQuestionParams,
@@ -111,12 +112,17 @@ export async function updateQuestion(
       question.content = content
     }
 
+    const populatedTags = question.tags as unknown as ITagDoc[]
+
+    const existingTagNames = populatedTags.map((t) => t.name.toLowerCase())
+
     const tagToAdd = tags.filter(
-      (tag) => !question.tags.toString().includes(tag.toLowerCase()),
+      (tag) => !existingTagNames.includes(tag.toLowerCase()),
     )
 
-    const tagsToRemove = question.tags.filter(
-      (t) => !tags.includes(t.toString()),
+    const tagsToRemove = populatedTags.filter(
+      (t) =>
+        !tags.map((tag) => tag.toLowerCase()).includes(t.name.toLowerCase()),
     )
 
     const newTagDocuments = []
@@ -151,9 +157,12 @@ export async function updateQuestion(
         { session },
       )
 
-      question.tags = question.tags.filter(
-        (tagId: mongoose.Types.ObjectId) => !tagsToRemove.includes(tagId),
-      )
+      question.tags = populatedTags.filter(
+        (t) =>
+          !tagIdsToRemove.some((id: mongoose.Types.ObjectId) =>
+            id.equals(t._id),
+          ),
+      ) as unknown as mongoose.Types.ObjectId[]
     }
     if (newTagDocuments.length > 0) {
       await TagQuestion.insertMany(newTagDocuments, { session })
@@ -194,6 +203,71 @@ export async function getQuestion(
     }
 
     return { success: true, data: JSON.parse(JSON.stringify(question)) }
+  } catch (error) {
+    return handleError(error) as ErrorResponse
+  }
+}
+
+export async function getQuestions(
+  params: PaginatedSearchParams,
+): Promise<ActionResponse<{ questions: Question[]; isNext: boolean }>> {
+  const validationResult = await action({
+    params,
+    schema: PaginatedSearchParamsSchema,
+  })
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse
+  }
+  const { page = 1, pageSize = 10, query, filter, sort } = params
+  const skip = Number(page - 1) * pageSize // -1 means current page leave that but remove before that if page is 4 then 4-1=3 remove 3 pages before where each page has 10 items
+  const limit = Number(pageSize) // number of items per page
+
+  const queryFilter: QueryFilter<IQuestionDoc> = {}
+
+  // TODO: recommendation system
+  if (filter === "recommended")
+    return { success: true, data: { questions: [], isNext: false } }
+
+  if (query) {
+    queryFilter.$or = [
+      { title: { $regex: new RegExp(query, "i") } },
+      { content: { $regex: new RegExp(query, "i") } },
+    ]
+  }
+
+  let sortCriteria = {}
+
+  switch (filter) {
+    case "newest":
+      sortCriteria = { createdAt: -1 }
+      break
+    case "unanswered":
+      queryFilter.answers = 0
+      sortCriteria = { createdAt: -1 }
+    case "popular":
+      sortCriteria = { upvotes: -1 }
+      break
+    default:
+      sortCriteria = { createdAt: -1 }
+      break
+  }
+
+  try {
+    const totalQuestion = await Question.countDocuments(queryFilter)
+    const questions = await Question.find(queryFilter)
+      .populate("tags", "name")
+      .populate("author", "name image")
+      .lean()
+      .sort(sortCriteria)
+      .skip(skip)
+      .limit(limit)
+
+    const isNext = totalQuestion > skip + questions.length // skip + question.lenght means not doing -1 // or include that -1 which is current page total question length
+
+    return {
+      success: true,
+      data: { questions: JSON.parse(JSON.stringify(questions)), isNext },
+    }
   } catch (error) {
     return handleError(error) as ErrorResponse
   }

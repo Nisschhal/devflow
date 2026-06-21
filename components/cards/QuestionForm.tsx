@@ -24,7 +24,7 @@ import { createQuestion, updateQuestion } from "@/lib/actions/question.action"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import ROUTES from "@/constants/route"
-import { Circle, Loader } from "lucide-react"
+import { Loader } from "lucide-react"
 
 // This is the only place InitializedMDXEditor is imported directly.
 const Editor = dynamic(() => import("../editor"), {

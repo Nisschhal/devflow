@@ -8,6 +8,8 @@ import QuestionCard from "@/components/cards/QuestionCard"
 import dbConnect from "@/lib/mongoose"
 import handleError from "@/lib/handlers/error"
 import { signOut } from "@/auth"
+import { SearchParams } from "next/dist/server/request/search-params"
+import { getQuestions } from "@/lib/actions/question.action"
 
 const questions = [
   {
@@ -57,36 +59,35 @@ const test = async () => {
     handleError(error)
   }
 }
-interface HomeProps {
-  searchParams: Promise<{ [key: string]: string }>
-}
 
-const Home = async ({ searchParams }: HomeProps) => {
-  await test()
-  const { query = "", filter = "" } = await searchParams
-  const filteredQuestions = questions.filter((question) => {
-    const matchesQuery = question.title
-      .toLowerCase()
-      .includes(query.toLowerCase())
+const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
+  const { page, pageSize, query, filter, sort } = await searchParams
 
-    const matchesFilter = filter
-      ? question.tags.some(
-          (tag) => tag.name.toLowerCase() === filter.toLowerCase(),
-        )
-      : true
-    return matchesQuery && matchesFilter
+  const { success, error, data } = await getQuestions({
+    page: page || 1,
+    pageSize: pageSize || 10,
+    query: query || "",
+    filter: filter || "",
+    sort: sort || "",
   })
+
+  const { questions } = data || {}
+
+  // const filteredQuestions = questions.filter((question) => {
+  //   const matchesQuery = question.title
+  //     .toLowerCase()
+  //     .includes(query.toLowerCase())
+
+  //   const matchesFilter = filter
+  //     ? question.tags.some(
+  //         (tag) => tag.name.toLowerCase() === filter.toLowerCase(),
+  //       )
+  //     : true
+  //   return matchesQuery && matchesFilter
+  // })
 
   return (
     <>
-      <form
-        action={async () => {
-          "use server"
-          await signOut()
-        }}
-      >
-        <Button type="submit">Logout</Button>
-      </form>
       <section className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="h1-bold text-dark100_light900">All Questions</h1>
 
@@ -107,11 +108,21 @@ const Home = async ({ searchParams }: HomeProps) => {
         />
       </section>
       <HomeFilter />
-      <div className="mt-10 flex w-full flex-col gap-6">
-        {filteredQuestions.map((question) => (
-          <QuestionCard key={question._id} question={question} />
-        ))}
-      </div>
+      {success ? (
+        <div className="mt-10 flex w-full flex-col gap-6">
+          {questions &&
+            questions.length > 0 &&
+            questions.map((question) => (
+              <QuestionCard key={question._id.toString()} question={question} />
+            ))}
+        </div>
+      ) : (
+        <div className="mt-10 flex w-full items-center justify-center">
+          <div className="text-dark400_light700">
+            {error?.message || "Failed to fetched question"}
+          </div>
+        </div>
+      )}
     </>
   )
 }

@@ -1,5 +1,6 @@
 import mongoose, { Mongoose } from "mongoose"
 import logger from "./logger"
+import "../database" // to load all model at once, because sometime some model is not registered
 
 // grab the mongodb url from .env file
 const MONGODB_URI = process.env.MONGODB_URI as string
