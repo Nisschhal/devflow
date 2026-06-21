@@ -7,58 +7,9 @@ import HomeFilter from "@/components/filter/HomeFilter"
 import QuestionCard from "@/components/cards/QuestionCard"
 import dbConnect from "@/lib/mongoose"
 import handleError from "@/lib/handlers/error"
-import { signOut } from "@/auth"
-import { SearchParams } from "next/dist/server/request/search-params"
 import { getQuestions } from "@/lib/actions/question.action"
-
-const questions = [
-  {
-    _id: "1",
-    title: "How to learn React?",
-    description: "I want to learn React, can anyone help me?",
-    tags: [
-      { _id: "1", name: "React" },
-      { _id: "2", name: "JavaScript" },
-    ],
-    author: {
-      _id: "1",
-      name: "John Doe",
-      image:
-        "https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg",
-    },
-    upvotes: 10,
-    answers: 5,
-    views: 100,
-    createdAt: new Date(),
-  },
-  {
-    _id: "2",
-    title: "How to learn JavaScript?",
-    description: "I want to learn JavaScript, can anyone help me?",
-    tags: [
-      { _id: "1", name: "JavaScript" },
-      { _id: "2", name: "JavaScript" },
-    ],
-    author: {
-      _id: "1",
-      name: "John Doe",
-      image:
-        "https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg",
-    },
-    upvotes: 10,
-    answers: 5,
-    views: 100,
-    createdAt: new Date("2021-09-01"),
-  },
-]
-
-const test = async () => {
-  try {
-    await dbConnect()
-  } catch (error) {
-    handleError(error)
-  }
-}
+import DataRenderer from "@/components/DataRenderer"
+import { EMPTY_QUESTION } from "@/constants/state"
 
 const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
   const { page, pageSize, query, filter, sort } = await searchParams
@@ -108,7 +59,20 @@ const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
         />
       </section>
       <HomeFilter />
-      {success ? (
+      <DataRenderer
+        success={success}
+        error={error}
+        data={questions}
+        empty={EMPTY_QUESTION}
+        render={(questions) => (
+          <div className="mt-10 flex w-full flex-col gap-6">
+            {questions.map((question) => (
+              <QuestionCard key={question._id} question={question} />
+            ))}
+          </div>
+        )}
+      />
+      {/* {success ? (
         <div className="mt-10 flex w-full flex-col gap-6">
           {questions &&
             questions.length > 0 &&
@@ -122,7 +86,7 @@ const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
             {error?.message || "Failed to fetched question"}
           </div>
         </div>
-      )}
+      )} */}
     </>
   )
 }
