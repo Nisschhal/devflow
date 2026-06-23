@@ -3,11 +3,12 @@ import { Preview } from "@/components/editor/Preview"
 import Metric from "@/components/Metric"
 import UserAvatar from "@/components/UserAvatar"
 import ROUTES from "@/constants/route"
-import { getQuestion } from "@/lib/actions/question.action"
+import { getQuestion, incrementViews } from "@/lib/actions/question.action"
 import { formatNumber, getTimeStamp } from "@/lib/utils"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import View from "../View"
+import { after } from "next/server"
 
 const QuestionDetails = async ({ params }: RouteParams) => {
   const { id } = await params
@@ -16,10 +17,15 @@ const QuestionDetails = async ({ params }: RouteParams) => {
   if (!success || !question) return redirect("/404")
 
   const { author, createdAt, answers, views, tags, content, title } = question
+  after(async () => {
+    await incrementViews({ questionId: id })
+  })
 
   return (
     <>
-      <View questionId={id} />
+      {/* Instead of calling client componet to trigger action you can also use parallel Promise.all([.,.]) to trigger actions without client which give updated UI but it is UI blocking as everything is await making SR a blocking  */}
+      {/* <View questionId={id} /> */}
+      {/* if you don't need immediate count UI updates then best is after() which make sure that increment happens on same server side rendering after data is sent but before request is close or done in server */}
 
       <div className="flex-start w-full flex-col">
         <div className="flex w-full flex-col-reverse justify-between">
