@@ -22,6 +22,7 @@ import Image from "next/image"
 import { createAnswer } from "@/lib/actions/answer.action"
 
 import dynamic from "next/dynamic"
+import { api } from "@/lib/api"
 
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -69,8 +70,42 @@ const AnswerForm = ({ questionId, questionTitle, questionContent }: Props) => {
     })
   }
 
-  const generateAIAnswer = () => {}
+  const generateAIAnswer = async () => {
+    if (session.status !== "authenticated")
+      return toast.error("You need to be logged in to use this feature")
 
+    setIsAISubmitting(true)
+    // Formulate AI answer based on this
+    const userAnswer = editorRef.current?.getMarkdown()
+
+    try {
+      const { success, error, data } = await api.ai.getAnswer(
+        questionTitle,
+        questionContent,
+        userAnswer,
+      )
+
+      if (!success || !data) {
+        return toast.error(error?.message)
+      }
+
+      const formattedAnswer = data.replace(/<br\s*\/?>/gi, "\n").trim()
+
+      if (editorRef.current) {
+        editorRef.current.setMarkdown(formattedAnswer)
+        form.setValue("content", formattedAnswer)
+        form.trigger("content")
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "There was a problem with your request",
+      )
+    } finally {
+      setIsAISubmitting(false)
+    }
+  }
   return (
     <>
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">

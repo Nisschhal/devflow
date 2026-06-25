@@ -5,7 +5,6 @@ import Credentials from "next-auth/providers/credentials"
 
 import { IAccountDoc } from "./database/account.model"
 import { api } from "./lib/api"
-import { ActionResponse } from "./types/global"
 import { SignInSchema } from "./lib/validation"
 import { IUserDoc } from "./database/user.model"
 import bcrypt from "bcryptjs"
@@ -104,11 +103,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // PURPOSE: Decide whether to ALLOW or DENY the sign-in, and save user to our database
     // RETURNS: true = allow sign-in, false = deny sign-in
     async signIn({ user, profile, account }) {
-      console.log("user, profile, account from signIn--------------------", {
-        user,
-        profile,
-        account,
-      })
       // If someone is logging in with email/password (credentials), just let them through
       // (credentials auth is handled differently, not via OAuth)
       if (account?.type === "credentials") return true
@@ -156,8 +150,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     //   - Every subsequent request: account is undefined (token already has the user ID)
     // PURPOSE: Attach our MongoDB user ID to the token so we know WHO this user is
     async jwt({ token, account }) {
-      console.log("user, profile, account from jwt", { token, account })
-
       // "account" only exists during the FIRST sign-in
       // On every later request, this block is skipped — the token already has sub set
       if (account) {
@@ -193,8 +185,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // PURPOSE: Pick what data from the JWT to expose to the app
     // The JWT has internal stuff we don't want to leak — this filters it
     async session({ session, token }) {
-      console.log("user, profile, account from session", { session, token })
-
       // Take the MongoDB user ID from the JWT (token.sub) and put it on session.user.id
       // Now anywhere in the app, you can do:
       //   const session = await auth()

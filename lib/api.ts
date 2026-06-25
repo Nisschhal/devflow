@@ -3,6 +3,7 @@ import { IUser } from "@/database/user.model"
 
 import { fetchHandler } from "./handlers/fetch"
 import ROUTES from "@/constants/route"
+import { APIResponse } from "@/types/api"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api"
@@ -60,5 +61,16 @@ export const api = {
       }),
     delete: (id: string) =>
       fetchHandler(`${API_BASE_URL}/accounts/${id}`, { method: "DELETE" }),
+  },
+  ai: {
+    getAnswer: (
+      questionTitle: string,
+      content: string,
+      userAnswer?: string,
+    ): Promise<ActionResponse<string>> =>
+      fetchHandler(`${API_BASE_URL}/ai/answers`, {
+        method: "POST",
+        body: JSON.stringify({ questionTitle, content, userAnswer }),
+      }),
   },
 }
