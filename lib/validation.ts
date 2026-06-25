@@ -138,17 +138,19 @@ export const IncrementViewsSchema = z.object({
   questionId: z.string().min(1, "Question ID is required"),
 })
 
-// export const AnswerSchema = z.object({
-//   content: z.string().min(100, { message: "Minimum of 100 characters." }),
-// })
+export const AnswerSchema = z.object({
+  content: z
+    .string()
+    .min(100, { message: "Answers need to be atleast of 100 characters." }),
+})
 
-// export const AnswerServerSchema = AnswerSchema.extend({
-//   questionId: z.string().min(1, "Question ID is required"),
-// })
+export const AnswerServerSchema = AnswerSchema.extend({
+  questionId: z.string().min(1, "Question ID is required"),
+})
 
-// export const GetAnswersSchema = PaginatedSearchParamsSchema.extend({
-//   questionId: z.string().min(1, "Question ID is required"),
-// })
+export const GetAnswersSchema = PaginatedSearchParamsSchema.extend({
+  questionId: z.string().min(1, "Question ID is required"),
+})
 
 // export const AIAnswerSchema = z.object({
 //   question: z
