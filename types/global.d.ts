@@ -64,3 +64,15 @@ interface RouteParams {
   params: Promise<Record<string, string>>
   searchParams: Promise<Record<string, string>>
 }
+
+interface User {
+  _id: string
+  name: string
+  username: string
+  email: string
+  bio?: string
+  image?: string
+  location?: string
+  portfolio?: string
+  reputation?: number
+}
