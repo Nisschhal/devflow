@@ -21,6 +21,16 @@ interface Question {
   createdAt: Date
 }
 
+interface Answer {
+  _id: string
+  author: Author
+  content: string
+  upvotes: number
+  question: string
+  downvotes: number
+  createdAt: Date
+}
+
 type ActionResponse<T = null> = {
   success: boolean
   data?: T // if success true, T = whatever coming in from db

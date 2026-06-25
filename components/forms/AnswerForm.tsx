@@ -14,16 +14,29 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Button } from "../ui/button"
 import { toast } from "sonner"
 import { AnswerSchema } from "@/lib/validation"
-import Editor from "../editor"
 import { useRef, useState, useTransition } from "react"
 import { useSession } from "next-auth/react"
 import { MDXEditorMethods } from "@mdxeditor/editor"
 import { Loader } from "lucide-react"
 import Image from "next/image"
+import { createAnswer } from "@/lib/actions/answer.action"
 
-const AnswerForm = () => {
+import dynamic from "next/dynamic"
+
+const Editor = dynamic(() => import("@/components/editor"), {
+  ssr: false,
+})
+
+interface Props {
+  questionId: string
+  questionTitle: string
+  questionContent: string
+}
+
+const AnswerForm = ({ questionId, questionTitle, questionContent }: Props) => {
   const [isAnswering, startAnsweringTransition] = useTransition()
   const [isAISubmitting, setIsAISubmitting] = useState(false)
+
   const session = useSession()
 
   const editorRef = useRef<MDXEditorMethods>(null)
@@ -35,31 +48,25 @@ const AnswerForm = () => {
     },
   })
 
-  const handleSubmit = async (data: z.infer<typeof AnswerSchema>) => {
-    // try {
-    //   const result = (await onSubmit(data)) as ActionResponse
-    //   console.log("AnswerForm handleSubmit result:", JSON.stringify(result))
-    //   if (result?.success) {
-    //     toast.success(
-    //       formType === "SIGN_IN"
-    //         ? "Sign in Successful!"
-    //         : "Sign up Successful!",
-    //     )
+  const handleSubmit = async (values: z.infer<typeof AnswerSchema>) => {
+    startAnsweringTransition(async () => {
+      const result = await createAnswer({
+        questionId,
+        content: values.content,
+      })
 
-    //     router.push(ROUTES.HOME)
-    //   } else {
-    //     toast.error(
-    //       formType === "SIGN_IN" ? "Sign in Failed!" : "Sign up Failed!",
-    //       { description: result?.error?.message },
-    //     )
-    //   }
-    // } catch (error) {
-    //   console.log("AnswerForm handleSubmit ERROR:", error)
-    //   toast.error("Something went wrong", {
-    //     description: error instanceof Error ? error.message : "Unknown error",
-    //   })
-    // }
-    console.log("data", data)
+      if (result.success) {
+        form.reset()
+
+        toast.success("Your answer has been posted successfully")
+
+        if (editorRef.current) {
+          editorRef.current.setMarkdown("")
+        }
+      } else {
+        toast.error(result.error?.message)
+      }
+    })
   }
 
   const generateAIAnswer = () => {}

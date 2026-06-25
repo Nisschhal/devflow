@@ -214,25 +214,25 @@ export const GetAnswersSchema = PaginatedSearchParamsSchema.extend({
 //   questionId: z.string().min(1, "Question ID is required"),
 // })
 
-// export const DeleteAnswerSchema = z.object({
-//   answerId: z.string().min(1, "Answer ID is required"),
-// })
+export const DeleteAnswerSchema = z.object({
+  answerId: z.string().min(1, "Answer ID is required"),
+})
 
-// export const CreateInteractionSchema = z.object({
-//   action: z.enum([
-//     "view",
-//     "upvote",
-//     "downvote",
-//     "bookmark",
-//     "post",
-//     "edit",
-//     "delete",
-//     "search",
-//   ]),
-//   actionTarget: z.enum(["question", "answer"]),
-//   actionId: z.string().min(1),
-//   authorId: z.string().min(1),
-// })
+export const CreateInteractionSchema = z.object({
+  action: z.enum([
+    "view",
+    "upvote",
+    "downvote",
+    "bookmark",
+    "post",
+    "edit",
+    "delete",
+    "search",
+  ]),
+  actionTarget: z.enum(["question", "answer"]),
+  actionId: z.string().min(1),
+  authorId: z.string().min(1),
+})
 
 // export const ProfileSchema = z.object({
 //   name: z

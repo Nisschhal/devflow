@@ -45,3 +45,38 @@ interface GetTagQuestionsParams extends Omit<PaginatedSearchParams, "filter"> {
 interface IncrementViewsParams {
   questionId: string
 }
+
+interface CreateAnswerParams {
+  content: string
+  questionId: string
+}
+
+interface GetAnswersParams extends PaginatedSearchParams {
+  questionId: string
+}
+
+interface DeleteAnswerParams {
+  answerId: string
+}
+
+interface CreateInteractionParams {
+  action:
+    | "view"
+    | "upvote"
+    | "downvote"
+    | "bookmark"
+    | "post"
+    | "edit"
+    | "delete"
+    | "search"
+  actionId: string
+  authorId: string
+  actionTarget: "question" | "answer"
+}
+
+interface UpdateReputationParams {
+  interaction: IInteractionDoc
+  session: mongoose.ClientSession
+  performerId: string
+  authorId: string
+}
