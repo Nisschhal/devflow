@@ -15,6 +15,8 @@ import AllAnswers from "@/components/answers/AllAnswers"
 import Votes from "@/components/votes/Votes"
 import { Suspense, use } from "react"
 import { hasVoted } from "@/lib/actions/vote.action"
+import SaveQuestion from "@/components/questions/SaveQuestion"
+import { hasSavedQuestion } from "@/lib/actions/collection.action"
 
 const QuestionDetails = async ({ params }: RouteParams) => {
   const { id } = await params
@@ -45,6 +47,10 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     targetType: "question",
   })
 
+  const hasQuestionSavedToCollection = hasSavedQuestion({
+    questionId: id,
+  })
+
   return (
     <>
       {/* Instead of calling client componet to trigger action you can also use parallel Promise.all([.,.]) to trigger actions without client which give updated UI but it is UI blocking as everything is await making SR a blocking  */}
@@ -67,7 +73,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
             </Link>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex gap-3 justify-end">
             <Suspense fallback={<div>Loading...</div>}>
               <Votes
                 targetType="question"
@@ -75,6 +81,12 @@ const QuestionDetails = async ({ params }: RouteParams) => {
                 downvotes={question.downvotes}
                 targetId={question._id}
                 hasVotedPromise={hasVotedPromise}
+              />
+            </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SaveQuestion
+                questionId={question._id}
+                hasSavedQuestion={hasQuestionSavedToCollection}
               />
             </Suspense>
           </div>

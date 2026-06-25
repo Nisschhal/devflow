@@ -10,6 +10,8 @@ import handleError from "@/lib/handlers/error"
 import { getQuestions } from "@/lib/actions/question.action"
 import DataRenderer from "@/components/DataRenderer"
 import { EMPTY_QUESTION } from "@/constants/state"
+import CommonFilter from "@/components/filter/CommonFilter"
+import { HomePageFilters } from "@/constants/filter"
 
 const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
   const { page, pageSize, query, filter, sort } = await searchParams
@@ -49,13 +51,18 @@ const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
           <Link href={ROUTES.ASK_QUESTION}>Ask a Question</Link>
         </Button>
       </section>
-      <section className="mt-11">
+      <section className="mt-11 flex justify-between gap-5 max-sm:flex-col sm:items-center">
         <LocalSearch
           route="/"
           imgSrc="/icons/search.svg"
           placeholder="Search questions..."
           otherClasses="flex-1"
-          iconPosition="left"
+        />
+
+        <CommonFilter
+          filters={HomePageFilters}
+          otherClasses="min-h-[56px] sm:min-w-[170px]"
+          containerClasses="hidden max-md:flex"
         />
       </section>
       <HomeFilter />
