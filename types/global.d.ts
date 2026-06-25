@@ -16,6 +16,7 @@ interface Question {
   tags: Tag[]
   author: Author
   upvotes: number
+  downvotes: number
   answers: number
   views: number
   createdAt: Date
@@ -29,6 +30,20 @@ interface Answer {
   question: string
   downvotes: number
   createdAt: Date
+}
+interface CreateVoteParams {
+  targetId: string
+  targetType: "question" | "answer"
+  voteType: "upvote" | "downvote"
+}
+
+interface HasVotedResponse {
+  hasUpvoted: boolean
+  hasDownvoted: boolean
+}
+
+interface UpdateVoteCountParams extends CreateVoteParams {
+  change: 1 | -1
 }
 
 type ActionResponse<T = null> = {

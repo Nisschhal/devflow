@@ -12,6 +12,9 @@ import { after } from "next/server"
 import AnswerForm from "@/components/forms/AnswerForm"
 import { getAnswers } from "@/lib/actions/answer.action"
 import AllAnswers from "@/components/answers/AllAnswers"
+import Votes from "@/components/votes/Votes"
+import { Suspense, use } from "react"
+import { hasVoted } from "@/lib/actions/vote.action"
 
 const QuestionDetails = async ({ params }: RouteParams) => {
   const { id } = await params
@@ -27,13 +30,19 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     questionId: id,
     page: 1,
     pageSize: 10,
-    filter: "latest",
+    filter: "latest", // for highest vote to appear first change to "popular"
   })
 
-  console.log("Anwers", answersResult)
   const { author, createdAt, answers, views, tags, content, title } = question
+
+  // non-blocking promise runs after first data sent to client
   after(async () => {
     await incrementViews({ questionId: id })
+  })
+
+  const hasVotedPromise = hasVoted({
+    targetId: question._id,
+    targetType: "question",
   })
 
   return (
@@ -59,7 +68,15 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           </div>
 
           <div className="flex justify-end">
-            <p>Votes</p>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Votes
+                targetType="question"
+                upvotes={question.upvotes}
+                downvotes={question.downvotes}
+                targetId={question._id}
+                hasVotedPromise={hasVotedPromise}
+              />
+            </Suspense>
           </div>
         </div>
 

@@ -80,3 +80,5 @@ interface UpdateReputationParams {
   performerId: string
   authorId: string
 }
+
+type HasVotedParams = Pick<CreateVoteParams, "targetId" | "targetType">
