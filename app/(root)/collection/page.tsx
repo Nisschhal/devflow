@@ -13,6 +13,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import CommonFilter from "@/components/filter/CommonFilter"
 import { CollectionFilters } from "@/constants/filter"
+import Pagination from "@/components/Pagination"
 
 const CollectionPage = async ({ searchParams }: RouteParams) => {
   const { page, pageSize, query, filter } = await searchParams
@@ -69,6 +70,7 @@ const CollectionPage = async ({ searchParams }: RouteParams) => {
         isNext={isNext || false}
         containerClasses="mt-10"
       /> */}
+      <Pagination page={page} isNext={isNext} />
     </>
   )
 }

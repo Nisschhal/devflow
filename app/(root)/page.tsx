@@ -12,6 +12,7 @@ import DataRenderer from "@/components/DataRenderer"
 import { EMPTY_QUESTION } from "@/constants/state"
 import CommonFilter from "@/components/filter/CommonFilter"
 import { HomePageFilters } from "@/constants/filter"
+import Pagination from "@/components/Pagination"
 
 const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
   const { page, pageSize, query, filter, sort } = await searchParams
@@ -24,7 +25,7 @@ const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
     sort: sort || "",
   })
 
-  const { questions } = data || {}
+  const { questions, isNext } = data || {}
 
   // const filteredQuestions = questions.filter((question) => {
   //   const matchesQuery = question.title
@@ -94,6 +95,7 @@ const Home = async (searchParams: Promise<PaginatedSearchParams>) => {
           </div>
         </div>
       )} */}
+      <Pagination isNext={isNext} page={page} />{" "}
     </>
   )
 }

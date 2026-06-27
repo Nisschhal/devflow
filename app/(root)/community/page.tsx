@@ -1,6 +1,7 @@
 import UserCard from "@/components/cards/UserCard"
 import DataRenderer from "@/components/DataRenderer"
 import CommonFilter from "@/components/filter/CommonFilter"
+import Pagination from "@/components/Pagination"
 import LocalSearch from "@/components/search/LocalSearch"
 import { UserFilters } from "@/constants/filter"
 import ROUTES from "@/constants/route"
@@ -17,7 +18,7 @@ const Community = async ({ searchParams }: RouteParams) => {
     filter,
   })
 
-  const { users } = data || {}
+  const { users, isNext } = data || {}
 
   return (
     <div>
@@ -51,6 +52,7 @@ const Community = async ({ searchParams }: RouteParams) => {
           </div>
         )}
       />
+      <Pagination page={page} isNext={isNext} />
     </div>
   )
 }

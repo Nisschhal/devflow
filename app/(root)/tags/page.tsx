@@ -1,6 +1,7 @@
 import TagCard from "@/components/cards/TagCard"
 import DataRenderer from "@/components/DataRenderer"
 import CommonFilter from "@/components/filter/CommonFilter"
+import Pagination from "@/components/Pagination"
 import LocalSearch from "@/components/search/LocalSearch"
 import { TagFilters } from "@/constants/filter"
 import ROUTES from "@/constants/route"
@@ -16,7 +17,7 @@ const TagPage = async ({ searchParams }: RouteParams) => {
     query,
     filter,
   })
-  const { tags } = data || {}
+  const { tags, isNext } = data || {}
 
   return (
     <>
@@ -49,6 +50,7 @@ const TagPage = async ({ searchParams }: RouteParams) => {
           </div>
         )}
       />
+      <Pagination page={page} isNext={isNext} />
     </>
   )
 }
