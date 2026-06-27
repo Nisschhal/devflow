@@ -12,6 +12,7 @@ import { getSavedQuestions } from "@/lib/actions/collection.action"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import CommonFilter from "@/components/filter/CommonFilter"
+import { CollectionFilters } from "@/constants/filter"
 
 const CollectionPage = async ({ searchParams }: RouteParams) => {
   const { page, pageSize, query, filter } = await searchParams
@@ -38,10 +39,14 @@ const CollectionPage = async ({ searchParams }: RouteParams) => {
       <div className="mt-11 flex justify-between gap-5 max-sm:flex-col sm:items-center">
         <LocalSearch
           route={ROUTES.COLLECTION}
-          iconPosition="left"
           imgSrc="/icons/search.svg"
-          placeholder="Search amazing minds here..."
+          placeholder="Search questions..."
           otherClasses="flex-1"
+        />
+
+        <CommonFilter
+          filters={CollectionFilters}
+          otherClasses="min-h-[56px] sm:min-w-[170px]"
         />
       </div>
 

@@ -18,8 +18,10 @@ import { hasVoted } from "@/lib/actions/vote.action"
 import SaveQuestion from "@/components/questions/SaveQuestion"
 import { hasSavedQuestion } from "@/lib/actions/collection.action"
 
-const QuestionDetails = async ({ params }: RouteParams) => {
+const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params
+  const { page, pageSize, filter } = await searchParams
+
   const { success, data: question } = await getQuestion({ questionId: id })
 
   if (!success || !question) return redirect("/404")
@@ -30,9 +32,9 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     error: answersError,
   } = await getAnswers({
     questionId: id,
-    page: 1,
-    pageSize: 10,
-    filter: "latest", // for highest vote to appear first change to "popular"
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    filter: filter || "popular",
   })
 
   const { author, createdAt, answers, views, tags, content, title } = question
