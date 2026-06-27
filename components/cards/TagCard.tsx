@@ -29,30 +29,34 @@ const TagCard = ({
   const iconClass = getDeviconClassName(name)
   const iconDescription = getTechDescription(name)
   const Content = (
-    <Badge className="flex justify-between gap-2 subtle-medium background-light800_dark300 text-light400_light500 rounded-md p-4 border-none  uppercase">
-      <div className="flex-center space-x-2 ">
-        <i className={`${iconClass} text-sm`}></i>
-        <span>{name}</span>
-      </div>
+    <>
+      <Badge className="flex justify-between gap-2 subtle-medium background-light800_dark300 text-light400_light500 rounded-md p-4 border-none  uppercase">
+        <div className="flex-center space-x-2 ">
+          <i className={`${iconClass} text-sm`}></i>
+          <span>{name}</span>
+        </div>
 
-      {remove && (
-        <Image
-          src={"/icons/close.svg"}
-          width={12}
-          height={12}
-          alt="close icon"
-          className="cursor-pointer object-contain invert-0 dark:invert"
-          onClick={handleRemove}
-        />
+        {remove && (
+          <Image
+            src={"/icons/close.svg"}
+            width={12}
+            height={12}
+            alt="close icon"
+            className="cursor-pointer object-contain invert-0 dark:invert"
+            onClick={handleRemove}
+          />
+        )}
+      </Badge>
+      {showCount && (
+        <p
+          className="flex-center min-w-10! px-2 small-medium text-dark500_light700
+ background-light800_dark300  rounded-full"
+        >
+          {questions}
+        </p>
       )}
-    </Badge>
+    </>
   )
-
-  {
-    showCount && (
-      <p className="small-medium text-dark500_light700">{questions}</p>
-    )
-  }
 
   if (compact) {
     return isButton ? (
