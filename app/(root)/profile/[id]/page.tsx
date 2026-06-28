@@ -161,7 +161,12 @@ const Profile = async ({ params }: RouteParams) => {
               render={(hotQuestions) => (
                 <div className="flex w-full flex-col gap-6">
                   {questions?.map((question) => (
-                    <QuestionCard key={question._id} question={question} />
+                    <QuestionCard
+                      key={question._id}
+                      question={question}
+                      wrapper={false}
+                      showActionBtns
+                    />
                   ))}
                 </div>
               )}
@@ -182,8 +187,9 @@ const Profile = async ({ params }: RouteParams) => {
                       key={answer._id}
                       {...answer}
                       content={answer.content.slice(0, 27)}
-                      containerClasses="card-wrapper rounded-[10px] px-7 py-9 sm:px-11"
+                      containerClasses=" rounded-[10px] px-7 py-9 sm:px-11"
                       showReadMore
+                      showActionBtns
                     />
                   ))}
                 </div>

@@ -2,20 +2,30 @@ import Link from "next/link"
 import React from "react"
 
 import ROUTES from "@/constants/route"
-import { getTimeStamp } from "@/lib/utils"
+import { cn, getTimeStamp } from "@/lib/utils"
 
 import TagCard from "./TagCard"
 import Metric from "../Metric"
+import EditDeleteAction from "../user/EditDeleteAction"
 
 interface Props {
   question: Question
+  wrapper?: boolean
+  showActionBtns?: boolean
 }
 
 const QuestionCard = ({
   question: { _id, title, tags, author, createdAt, upvotes, answers, views },
+  wrapper = true,
+  showActionBtns,
 }: Props) => {
   return (
-    <div className="card-wrapper rounded-[10px] p-9 sm:px-11">
+    <div
+      className={cn(
+        " rounded-[10px] light-border border-b p-9 sm:px-11",
+        wrapper && "card-wrapper",
+      )}
+    >
       <div className="flex flex-col-reverse items-start justify-between gap-5 sm:flex-row">
         <div>
           <span className="subtle-regular text-dark400_light700 line-clamp-1 flex sm:hidden">
@@ -28,6 +38,8 @@ const QuestionCard = ({
             </h3>
           </Link>
         </div>
+
+        {showActionBtns && <EditDeleteAction type="Question" itemId={_id} />}
       </div>
 
       <div className="mt-3.5 flex w-full flex-wrap gap-2">
