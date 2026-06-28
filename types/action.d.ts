@@ -82,3 +82,7 @@ interface UpdateReputationParams {
 }
 
 type HasVotedParams = Pick<CreateVoteParams, "targetId" | "targetType">
+
+interface GetUserParams {
+  userId: string
+}
