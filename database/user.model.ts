@@ -55,7 +55,10 @@ export interface IUser {
   reputation?: number
 }
 
-export interface IUserDoc extends IUser, Document {}
+export interface IUserDoc extends IUser, Document {
+  createdAt: Date
+  updatedAt: Date
+}
 const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },

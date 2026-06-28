@@ -86,3 +86,17 @@ type HasVotedParams = Pick<CreateVoteParams, "targetId" | "targetType">
 interface GetUserParams {
   userId: string
 }
+
+interface GetUserQuestionsParams extends Omit<
+  PaginatedSearchParams,
+  "query" | "filter" | "sort"
+> {
+  userId: string
+}
+interface GetUserAnswersParams extends PaginatedSearchParams {
+  userId: string
+}
+
+interface GetUserTagsParams {
+  userId: string
+}

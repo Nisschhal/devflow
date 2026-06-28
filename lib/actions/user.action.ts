@@ -1,13 +1,19 @@
 "use server"
 
-import { QueryFilter } from "mongoose"
+import { PipelineStage, QueryFilter, Types } from "mongoose"
 
 import { Answer, Question, User } from "@/database"
 
 import action from "../handlers/action"
 import handleError from "../handlers/error"
-import { GetUserSchema, PaginatedSearchParamsSchema } from "../validation"
+import {
+  GetUserQuestionsSchema,
+  GetUsersAnswersSchema,
+  GetUserSchema,
+  PaginatedSearchParamsSchema,
+} from "../validation"
 import dbConnect from "../mongoose"
+import { IUserDoc } from "@/database/user.model"
 
 export async function getUsers(
   params: PaginatedSearchParams,
@@ -76,7 +82,7 @@ export async function getUsers(
 
 export async function getUser(params: GetUserParams): Promise<
   ActionResponse<{
-    user: typeof User
+    user: User
     totalQuestions: number
     totalAnswers: number
   }>
@@ -85,6 +91,11 @@ export async function getUser(params: GetUserParams): Promise<
     params,
     schema: GetUserSchema,
   })
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse
+  }
+
   const { userId } = params
 
   try {
@@ -101,6 +112,162 @@ export async function getUser(params: GetUserParams): Promise<
         user: JSON.parse(JSON.stringify(user)),
         totalQuestions,
         totalAnswers,
+      },
+    }
+  } catch (error) {
+    return handleError(error) as ErrorResponse
+  }
+}
+
+export async function getUserQuestions(params: GetUserQuestionsParams): Promise<
+  ActionResponse<{
+    questions: Question[]
+    isNext: boolean
+  }>
+> {
+  const validationResult = await action({
+    params,
+    schema: GetUserQuestionsSchema,
+  })
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse
+  }
+
+  const { userId, page = 1, pageSize = 10 } = params
+
+  const skip = (Number(page) - 1) * pageSize
+  const limit = pageSize
+
+  try {
+    const totalQuestions = await Question.countDocuments({ author: userId })
+
+    const questions = await Question.find({ author: userId })
+      .populate("tags", "name")
+      .populate("author", "name image")
+      .skip(skip)
+      .limit(limit)
+
+    const isNext = totalQuestions > skip + questions.length
+
+    return {
+      success: true,
+      data: {
+        questions: JSON.parse(JSON.stringify(questions)),
+        isNext,
+      },
+    }
+  } catch (error) {
+    return handleError(error) as ErrorResponse
+  }
+}
+export async function getUserAnswers(params: GetUserQuestionsParams): Promise<
+  ActionResponse<{
+    answers: Answer[]
+    isNext: boolean
+  }>
+> {
+  const validationResult = await action({
+    params,
+    schema: GetUsersAnswersSchema,
+  })
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse
+  }
+
+  const { userId, page = 1, pageSize = 10 } = params
+
+  const skip = (Number(page) - 1) * pageSize
+  const limit = pageSize
+
+  try {
+    const totalAnswers = await Answer.countDocuments({ author: userId })
+
+    const answers = await Answer.find({ author: userId })
+      .populate("author", "_id name image")
+      .skip(skip)
+      .limit(limit)
+
+    const isNext = totalAnswers > skip + answers.length
+
+    return {
+      success: true,
+      data: {
+        answers: JSON.parse(JSON.stringify(answers)),
+        isNext,
+      },
+    }
+  } catch (error) {
+    return handleError(error) as ErrorResponse
+  }
+}
+
+export async function getUserTopTags(params: GetUserTagsParams): Promise<
+  ActionResponse<{
+    tags: { _id: string; name: string; count: number }[]
+  }>
+> {
+  const validationResult = await action({
+    params,
+    schema: GetUserSchema,
+  })
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse
+  }
+
+  const { userId } = params
+
+  try {
+    const pipeline: PipelineStage[] = [
+      // 1. Find all questions by this user
+      { $match: { author: new Types.ObjectId(userId) } },
+
+      // 2. Split each question's tags array into separate docs
+      //    { tags: [id1, id2] } → { tags: id1 }, { tags: id2 }
+      { $unwind: "$tags" },
+
+      // 3. Group by tag ID and count how many times each tag appears
+      //    { _id: ObjectId("abc"), count: 3 }
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+
+      // 4. Join with "tags" collection to get the tag name
+      //    Adds tagInfo: [{ _id, name }] to each doc
+      {
+        $lookup: {
+          from: "tags",
+          localField: "_id",
+          foreignField: "_id",
+          as: "tagInfo",
+        },
+      },
+
+      // 5. Unwrap tagInfo from array to plain object (always 1 match)
+      { $unwind: "$tagInfo" },
+
+      // 6. Sort by count descending (most used tags first)
+      { $sort: { count: -1 } },
+
+      // 7. Keep only top 10 tags
+      { $limit: 10 },
+
+      // 8. Clean up output: { _id, name, count }
+      {
+        $project: {
+          _id: "$tagInfo._id",
+          name: "$tagInfo.name",
+          count: 1,
+        },
+      },
+    ]
+
+    const tags = await Question.aggregate(pipeline)
+
+    return {
+      success: true,
+      data: {
+        tags: JSON.parse(JSON.stringify(tags)),
       },
     }
   } catch (error) {
