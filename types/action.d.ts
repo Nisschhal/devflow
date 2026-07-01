@@ -108,3 +108,25 @@ interface DeleteQuestionParams {
 interface DeleteAnswerParams {
   answerId: string
 }
+
+interface CreateInteractionParams {
+  action:
+    | "view"
+    | "upvote"
+    | "downvote"
+    | "bookmark"
+    | "post"
+    | "edit"
+    | "delete"
+    | "search"
+  actionId: string
+  authorId: string
+  actionTarget: "question" | "answer"
+}
+
+interface RecommendationParams {
+  userId: string
+  query?: string
+  skip: number
+  limit: number
+}

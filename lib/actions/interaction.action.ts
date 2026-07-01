@@ -44,7 +44,7 @@ export async function createInteraction(
       { session },
     )
 
-    // Update reputation for both the performer and the content author
+    // Update reputation/Points for both the performer and the content author
     await updateReputation({
       interaction,
       session,
