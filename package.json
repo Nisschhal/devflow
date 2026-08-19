@@ -18,6 +18,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cm6-theme-basic-dark": "^0.2.0",
+    "cmdk": "^1.1.1",
     "dayjs": "^1.11.21",
     "lucide-react": "^1.18.0",
     "mongoose": "^9.7.1",

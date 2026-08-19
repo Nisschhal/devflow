@@ -124,6 +124,11 @@ interface CreateInteractionParams {
   actionTarget: "question" | "answer"
 }
 
+interface GlobalSearchParams {
+  query: string
+  type?: GlobalSearchType | null
+}
+
 interface RecommendationParams {
   userId: string
   query?: string

@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
-import Google from "next-auth/providers/google"
+// import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 
 import { IAccountDoc } from "./database/account.model"
@@ -15,11 +15,12 @@ import bcrypt from "bcryptjs"
 // - signOut: function to trigger sign-out
 // - auth: function to get the current session (used in server components/API routes)
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // The OAuth providers we support — GitHub and Google
-  // Users click "Sign in with GitHub/Google" → redirected to provider → provider sends user data back
+  // The OAuth providers we support — GitHub only for now.
+  // Google is disabled until AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET exist in the
+  // environment; registering it without credentials fails at sign-in time.
   providers: [
     GitHub,
-    Google,
+    // Google,
 
     // ============================
     // CREDENTIALS PROVIDER — Email/Password Login

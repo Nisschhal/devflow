@@ -5,7 +5,7 @@ import handleError from "@/lib/handlers/error"
 import { NotFoundError, ValidationError } from "@/lib/http-error"
 import dbConnect from "@/lib/mongoose"
 import { AccountSchema } from "@/lib/validation"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 
 // GET /api/users/[id]
 export async function GET(

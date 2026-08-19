@@ -8,7 +8,7 @@ import handleError from "@/lib/handlers/error"
 import { ValidationError } from "@/lib/http-error"
 import dbConnect from "@/lib/mongoose"
 import { SignInWithOAuthSchema } from "@/lib/validation"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 
 export async function POST(request: Request) {
   const { provider, providerAccountId, user } = await request.json()

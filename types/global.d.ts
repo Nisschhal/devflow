@@ -106,3 +106,11 @@ interface Badges {
   SILVER: number
   BRONZE: number
 }
+
+type GlobalSearchType = "question" | "answer" | "user" | "tag"
+
+interface GlobalSearchResult {
+  id: string
+  type: GlobalSearchType
+  title: string
+}

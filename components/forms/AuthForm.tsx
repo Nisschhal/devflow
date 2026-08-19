@@ -36,7 +36,9 @@ import { useRouter } from "next/navigation"
 interface AuthFormProps<T extends FieldValues> {
   // THE BLUEPRINT: This schema (Zod Machine) must produce data that fits the shape of T.
   // We specify it here so we can "capture" the rules and pass them to the resolver later.
-  schema: z.ZodType<T>
+  // <output, input>: both are T, so the resolver sees a schema whose input side
+  // is a FieldValues-compatible object rather than Zod 4's default `unknown`.
+  schema: z.ZodType<T, T>
 
   // THE STARTING DATA: The actual object we start with.
   defaultValues: T

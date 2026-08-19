@@ -5,7 +5,7 @@ import handleError from "@/lib/handlers/error"
 import dbConnect from "@/lib/mongoose"
 import { UserSchema } from "@/lib/validation"
 import { NotFoundError, ValidationError } from "@/lib/http-error"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 
 export async function POST(request: Request) {
   const { email } = await request.json()

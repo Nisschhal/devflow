@@ -260,7 +260,10 @@ export const CreateInteractionSchema = z.object({
 //   }),
 // })
 
-// export const GlobalSearchSchema = z.object({
-//   query: z.string(),
-//   type: z.string().nullable().optional(),
-// })
+export const GlobalSearchSchema = z.object({
+  query: z.string().min(1, { message: "Search query is required." }),
+  type: z
+    .enum(["question", "answer", "user", "tag"])
+    .nullable()
+    .optional(),
+})

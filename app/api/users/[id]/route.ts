@@ -4,7 +4,7 @@ import User from "@/database/user.model"
 import handleError from "@/lib/handlers/error"
 import dbConnect from "@/lib/mongoose"
 import { NotFoundError } from "@/lib/http-error"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 import { UserSchema } from "@/lib/validation"
 
 // GET /api/users/[id]

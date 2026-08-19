@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import Account from "@/database/account.model"
 import handleError from "@/lib/handlers/error"
 import dbConnect from "@/lib/mongoose"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 import { AccountSchema } from "@/lib/validation"
 import { ForbidenError } from "@/lib/http-error"
 

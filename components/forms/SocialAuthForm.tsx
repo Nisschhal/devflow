@@ -39,6 +39,8 @@ const SocialAuthForm = () => {
         />
         <span>Login with GitHub</span>
       </Button>
+      {/* Google sign-in is disabled until AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET
+          are set and the Google provider is re-enabled in auth.ts.
       <Button
         className={buttonClass}
         onClick={() => handleSocialLogin("google")}
@@ -46,6 +48,7 @@ const SocialAuthForm = () => {
         <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
         <span>Login with Google</span>
       </Button>
+      */}
     </div>
   )
 }

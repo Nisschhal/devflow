@@ -3,7 +3,7 @@ import handleError from "@/lib/handlers/error"
 import { ValidationError } from "@/lib/http-error"
 import dbConnect from "@/lib/mongoose"
 import { UserSchema } from "@/lib/validation"
-import { APIErrorResponse } from "@/types/global"
+import { APIErrorResponse } from "@/types/api"
 import { NextResponse } from "next/server"
 
 export async function GET() {
