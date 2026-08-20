@@ -198,13 +198,14 @@ export async function updateQuestion(
   }
 }
 
+// Reading a question is public — the detail page has to render for logged-out
+// visitors. Callers that mutate (edit) check the session themselves.
 export const getQuestion = cache(async function getQuestion(
   params: GetQuestionParams,
 ): Promise<ActionResponse<Question>> {
   const validationResult = await action({
     params,
     schema: GetQuestionSchema,
-    authorize: true,
   })
 
   if (validationResult instanceof Error) {

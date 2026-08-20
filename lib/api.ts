@@ -5,8 +5,27 @@ import { fetchHandler } from "./handlers/fetch"
 import ROUTES from "@/constants/route"
 import { APIResponse } from "@/types/api"
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api"
+// These helpers call our own /api routes over HTTP, so they need an absolute
+// URL when they run on the server (auth callbacks do). Falling back to
+// localhost in a deployed environment makes every server-side call fail, which
+// silently breaks sign-in, so derive the deployment host when it is available.
+const resolveBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL)
+    return process.env.NEXT_PUBLIC_API_BASE_URL
+
+  // Vercel: the stable production domain, then the per-deployment domain.
+  const vercelHost =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL
+  if (vercelHost) return `https://${vercelHost}/api`
+
+  // Any other host that sets an explicit auth origin (AUTH_URL/NEXTAUTH_URL).
+  const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL
+  if (authUrl) return `${authUrl.replace(/\/+$/, "").replace(/\/api$/, "")}/api`
+
+  return "http://localhost:3000/api"
+}
+
+const API_BASE_URL = resolveBaseUrl()
 
 export const api = {
   auth: {

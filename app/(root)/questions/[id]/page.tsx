@@ -6,7 +6,7 @@ import ROUTES from "@/constants/route"
 import { getQuestion, incrementViews } from "@/lib/actions/question.action"
 import { formatNumber, getTimeStamp } from "@/lib/utils"
 import Link from "next/link"
-import { redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import View from "../View"
 import { after } from "next/server"
 import AnswerForm from "@/components/forms/AnswerForm"
@@ -48,7 +48,7 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
 
   const { success, data: question } = await getQuestion({ questionId: id })
 
-  if (!success || !question) return redirect("/404")
+  if (!success || !question) return notFound()
 
   const {
     success: areAnswersLoaded,
