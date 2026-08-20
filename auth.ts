@@ -111,17 +111,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // If we didn't get account or user data from the provider, something went wrong — deny
       if (!account || !user) return false
 
+      // For GitHub: use their GitHub username (profile.login = "octocat")
+      // For Google: just lowercase their display name (no username concept in Google)
+      const login = profile?.login as string | undefined
+      const username =
+        account.provider === "github"
+          ? login
+          : (user.name?.toLowerCase() as string)
+
+      // GitHub only returns an email when the user has a public one, or when the
+      // token carries the user:email scope AND /user/emails succeeds. When it
+      // comes back empty the payload fails validation downstream and the whole
+      // sign-in is rejected as "AccessDenied", so fall back to GitHub's own
+      // no-reply address rather than denying a legitimate user.
+      const email =
+        user.email ?? (login ? `${login}@users.noreply.github.com` : undefined)
+
       // Build a user info object from what the OAuth provider gave us
       const userInfo = {
-        name: user.name!,
-        email: user.email!,
+        name: user.name || login || "Unknown",
+        email: email!,
         image: user.image!,
-        // For GitHub: use their GitHub username (profile.login = "octocat")
-        // For Google: just lowercase their display name (no username concept in Google)
-        username:
-          account.provider === "github"
-            ? (profile?.login as string)
-            : (user.name?.toLowerCase() as string),
+        username: username!,
       }
 
       // Call our own API to save/update the user and account in MongoDB
@@ -130,14 +141,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       //   2. Creates a new User in DB (or updates name/image if they already exist)
       //   3. Creates a new Account in DB (links the User to this OAuth provider)
       //   All inside a MongoDB transaction (all-or-nothing)
-      const { success } = (await api.auth.oAuthSignIn({
+      const { success, error } = (await api.auth.oAuthSignIn({
         user: userInfo,
         provider: account.provider as "github" | "google",
         providerAccountId: account.providerAccountId,
       })) as ActionResponse
 
-      // If saving to DB failed, deny the sign-in
-      if (!success) return false
+      // If saving to DB failed, deny the sign-in. Log the real reason first —
+      // NextAuth turns a `false` return into an opaque "AccessDenied" screen,
+      // which tells you nothing about which field or write actually failed.
+      if (!success) {
+        console.error("[auth] OAuth sign-in rejected", {
+          provider: account.provider,
+          username: userInfo.username,
+          hasEmail: Boolean(user.email),
+          error,
+        })
+        return false
+      }
 
       // Everything worked — allow the sign-in to proceed
       return true
